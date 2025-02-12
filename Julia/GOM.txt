@@ -1,0 +1,50 @@
+
+
+julia> using StructuralIdentifiability
+
+julia> ode = @ODEmodel(
+       x1'(t) = x1(t)*x2(t),
+       x2'(t) = -b*x2(t),
+       y(t) = x1(t)*x2(t)
+       )
+[ Info: Summary of the model:
+[ Info: State variables: x1, x20.00506 seconds
+[ Info: Parameters: b the Wronskians [5]
+[ Info: Inputs:  the Wronskians computed in 6.65e-5 seconds
+[ Info: Outputs: yg generating set. Simplification level: standard
+x1'(t) = x1(t)*x2(t)rmal forms of degree 2 in 2 variables
+x2'(t) = -x2(t)*becializations in 0.0240378 seconds, found 3 relations
+y(t) = x1(t)*x2(t)3 Groebner bases for degrees (3, 3) for block orderings
+[ Info: Computed Groebner bases in 0.0154997 seconds
+[ Info: Inclusion checked with probability 0.991 in 0.0017384 seconds
+
+julia> assess_identifiability(ode)
+  x1(t) => :globally
+  x2(t) => :globally
+  b     => :globally
+
+
+
+
+julia> find_identifiable_functions(ode;with_states=true)
+ x2(t)
+ x1(t)
+ b
+
+
+julia> find_identifiable_functions(ode)
+ b
+
+julia> ioeqs = find_ioequations(ode)
+Dict{Nemo.QQMPolyRingElem, Nemo.QQMPolyRingElem} with 1 entry:
+  y(t)_2 => -b^2*y(t)_0^2 - b*y(t)_0*y(t)_1 - y(t)_0*y(t)_2 + y(t)_1^2
+
+julia> collect(values(ioeqs))
+1-element Vector{Nemo.QQMPolyRingElem}:
+ -b^2*y(t)_0^2 - b*y(t)_0*y(t)_1 - y(t)_0*y(t)_2 + y(t)_1^2
+
+
+julia> assess_identifiability(ode, known_ic = [x1,x2])
+ x1(0) => :globally
+  x2(0) => :globally
+  b     => :globally

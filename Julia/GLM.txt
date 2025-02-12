@@ -1,0 +1,51 @@
+julia> using StructuralIdentifiability
+
+julia> ode = @ODEmodel(
+       x1'(t) = x2(t)*(1-x1(t)/k),
+       x2'(t) = p*x2(t)*x2(t)*(1-x1(t)/k)/x1(t),
+       y(t) = x2(t)*(1-x1(t)/k)
+       )
+[ Info: Summary of the model:
+[ Info: State variables: x1, x2
+[ Info: Parameters: k, p
+[ Info: Inputs:
+[ Info: Outputs: y
+x1'(t) = (-x1(t)*x2(t) + x2(t)*k)//k
+x2'(t) = (-x1(t)*x2(t)^2*p + x2(t)^2*k*p)//(x1(t)*k)
+y(t) = (-x1(t)*x2(t) + x2(t)*k)//k
+
+
+julia> assess_identifiability(ode)
+  x1(t) => :globally
+  x2(t) => :globally
+  k     => :globally
+  p     => :globally
+
+
+
+julia> find_identifiable_functions(ode;with_states=true)
+ x2(t)
+ x1(t)
+ p
+ k
+
+
+julia> ioeqs = find_ioequations(ode)
+Dict{Nemo.QQMPolyRingElem, Nemo.QQMPolyRingElem} with 1 entry:
+  y(t)_2 => k^2*p*y(t)_0^2*y(t)_2^2 - 3*k^2*p*y(t)_0*y(t)_1^2*y(t)_2 + 2*k^2*p*y(t)_1^4 + k^2*y(t)_0*y(t)_1^2*y(t)_2 - …
+
+julia> collect(values(ioeqs))
+1-element Vector{Nemo.QQMPolyRingElem}:
+ k^2*p*y(t)_0^2*y(t)_2^2 - 3*k^2*p*y(t)_0*y(t)_1^2*y(t)_2 + 2*k^2*p*y(t)_1^4 + k^2*y(t)_0*y(t)_1^2*y(t)_2 - k^2*y(t)_1^4 - 2*k*p^2*y(t)_0^3*y(t)_1*y(t)_2 + 4*k*p^2*y(t)_0^2*y(t)_1^3 - 2*k*p*y(t)_0^2*y(t)_1^3 + 2*k*y(t)_0^3*y(t)_1*y(t)_2 - 2*k*y(t)_0^2*y(t)_1^3 + p^3*y(t)_0^5*y(t)_2 - 2*p^3*y(t)_0^4*y(t)_1^2 + 3*p^2*y(t)_0^5*y(t)_2 - 5*p^2*y(t)_0^4*y(t)_1^2 + 3*p*y(t)_0^5*y(t)_2 - 4*p*y(t)_0^4*y(t)_1^2 + y(t)_0^5*y(t)_2 - y(t)_0^4*y(t)_1^2
+
+julia> find_identifiable_functions(ode)
+ p
+ k
+
+
+julia> assess_identifiability(ode, known_ic = [x1,x2])
+
+ x1(0) => :globally
+  x2(0) => :globally
+  k     => :globally
+  p     => :globally

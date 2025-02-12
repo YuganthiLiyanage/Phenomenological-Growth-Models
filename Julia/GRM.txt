@@ -1,0 +1,55 @@
+julia> using StructuralIdentifiability
+
+julia> ode = @ODEmodel(
+       x1'(t) = x2(t)*(1-x3(t)),
+       x2'(t) = p*x2(t)*x2(t)*(1-x3(t))/x1(t),
+       x3'(t) = a*x3(t)*x2(t)*(1-x3(t))/x1(t),
+       y(t) = x2(t)*(1-x3(t))
+       )
+[ Info: Summary of the model:
+[ Info: State variables: x1, x2, x3
+[ Info: Parameters: a, p
+[ Info: Inputs:
+[ Info: Outputs: y
+x1'(t) = -x2(t)*x3(t) + x2(t)
+x2'(t) = (-x2(t)^2*x3(t)*p + x2(t)^2*p)//x1(t)
+x3'(t) = (-x2(t)*x3(t)^2*a + x2(t)*x3(t)*a)//x1(t)
+y(t) = -x2(t)*x3(t) + x2(t)
+
+
+julia> assess_identifiability(ode)
+  x1(t) => :globally
+  x2(t) => :locally
+  x3(t) => :locally
+  a     => :locally
+  p     => :locally
+
+
+
+julia> find_identifiable_functions(ode;with_states=true)
+ x1(t)
+ a^2
+ a + 2*p
+ x2(t)*x3(t) - x2(t)
+ (x3(t) - 1)//(x2(t)*x3(t))
+ a//(x2(t)*x3(t) + x2(t))
+
+julia> find_identifiable_functions(ode)
+ a^2
+ a + 2*alpha
+
+julia> ioeqs = find_ioequations(ode)
+Dict{Nemo.QQMPolyRingElem, Nemo.QQMPolyRingElem} with 1 entry:
+  y(t)_3 => a^3*alpha*y(t)_0^3*y(t)_1*y(t)_2*y(t)_3 - a^3*alpha*y(t)_0^3*y(t)_2^3 - 2*a^3*alpha*y(t)_0^2*y(t)_1^3*y(t)_…
+
+julia> collect(values(ioeqs))
+1-element Vector{Nemo.QQMPolyRingElem}:
+ a^3*alpha*y(t)_0^3*y(t)_1*y(t)_2*y(t)_3 - a^3*alpha*y(t)_0^3*y(t)_2^3 - 2*a^3*alpha*y(t)_0^2*y(t)_1^3*y(t)_3 + 6*a^3*alpha*y(t)_0*y(t)_1^4*y(t)_2 - 4*a^3*alpha*y(t)_1^6 + a^3*y(t)_0^2*y(t)_1^3*y(t)_3 - a^3*y(t)_0^2*y(t)_1^2*y(t)_2^2 - 2*a^3*y(t)_0*y(t)_1^4*y(t)_2 + 2*a^3*y(t)_1^6 - a^2*alpha^2*y(t)_0^4*y(t)_3^2 + 15*a^2*alpha^2*y(t)_0^3*y(t)_1*y(t)_2*y(t)_3 - 5*a^2*alpha^2*y(t)_0^3*y(t)_2^3 - 18*a^2*alpha^2*y(t)_0^2*y(t)_1^3*y(t)_3 - 25*a^2*alpha^2*y(t)_0^2*y(t)_1^2*y(t)_2^2 + 70*a^2*alpha^2*y(t)_0*y(t)_1^4*y(t)_2 - 36*a^2*alpha^2*y(t)_1^6 - 6*a^2*alpha*y(t)_0^3*y(t)_1*y(t)_2*y(t)_3 + 6*a^2*alpha*y(t)_0^3*y(t)_2^3 + 14*a^2*alpha*y(t)_0^2*y(t)_1^3*y(t)_3 - 2*a^2*alpha*y(t)_0^2*y(t)_1^2*y(t)_2^2 - 40*a^2*alpha*y(t)_0*y(t)_1^4*y(t)_2 + 28*a^2*alpha*y(t)_1^6 - 3*a^2*y(t)_0^2*y(t)_1^3*y(t)_3 + 4*a^2*y(t)_0^2*y(t)_1^2*y(t)_2^2 + 4*a^2*y(t)_0*y(t)_1^4*y(t)_2 - 5*a^2*y(t)_1^6 - 2*a*alpha^3*y(t)_0^4*y(t)_3^2 + 28*a*alpha^3*y(t)_0^3*y(t)_1*y(t)_2*y(t)_3 - 8*a*alpha^3*y(t)_0^3*y(t)_2^3 - 32*a*alpha^3*y(t)_0^2*y(t)_1^3*y(t)_3 - 50*a*alpha^3*y(t)_0^2*y(t)_1^2*y(t)_2^2 + 128*a*alpha^3*y(t)_0*y(t)_1^4*y(t)_2 - 64*a*alpha^3*y(t)_1^6 - 18*a*alpha^2*y(t)_0^3*y(t)_1*y(t)_2*y(t)_3 + 18*a*alpha^2*y(t)_0^3*y(t)_2^3 + 36*a*alpha^2*y(t)_0^2*y(t)_1^3*y(t)_3 - 108*a*alpha^2*y(t)_0*y(t)_1^4*y(t)_2 + 72*a*alpha^2*y(t)_1^6 + 5*a*alpha*y(t)_0^3*y(t)_1*y(t)_2*y(t)_3 - 9*a*alpha*y(t)_0^3*y(t)_2^3 - 18*a*alpha*y(t)_0^2*y(t)_1^3*y(t)_3 + 24*a*alpha*y(t)_0^2*y(t)_1^2*y(t)_2^2 + 26*a*alpha*y(t)_0*y(t)_1^4*y(t)_2 - 28*a*alpha*y(t)_1^6 + 3*a*y(t)_0^2*y(t)_1^3*y(t)_3 - 5*a*y(t)_0^2*y(t)_1^2*y(t)_2^2 - 2*a*y(t)_0*y(t)_1^4*y(t)_2 + 4*a*y(t)_1^6 - alpha^4*y(t)_0^4*y(t)_3^2 + 14*alpha^4*y(t)_0^3*y(t)_1*y(t)_2*y(t)_3 - 4*alpha^4*y(t)_0^3*y(t)_2^3 - 16*alpha^4*y(t)_0^2*y(t)_1^3*y(t)_3 - 25*alpha^4*y(t)_0^2*y(t)_1^2*y(t)_2^2 + 64*alpha^4*y(t)_0*y(t)_1^4*y(t)_2 - 32*alpha^4*y(t)_1^6 - 12*alpha^3*y(t)_0^3*y(t)_1*y(t)_2*y(t)_3 + 12*alpha^3*y(t)_0^3*y(t)_2^3 + 24*alpha^3*y(t)_0^2*y(t)_1^3*y(t)_3 - 72*alpha^3*y(t)_0*y(t)_1^4*y(t)_2 + 48*alpha^3*y(t)_1^6 + 5*alpha^2*y(t)_0^3*y(t)_1*y(t)_2*y(t)_3 - 9*alpha^2*y(t)_0^3*y(t)_2^3 - 18*alpha^2*y(t)_0^2*y(t)_1^3*y(t)_3 + 24*alpha^2*y(t)_0^2*y(t)_1^2*y(t)_2^2 + 26*alpha^2*y(t)_0*y(t)_1^4*y(t)_2 - 28*alpha^2*y(t)_1^6 + 6*alpha*y(t)_0^2*y(t)_1^3*y(t)_3 - 10*alpha*y(t)_0^2*y(t)_1^2*y(t)_2^2 - 4*alpha*y(t)_0*y(t)_1^4*y(t)_2 + 8*alpha*y(t)_1^6 - y(t)_0^2*y(t)_1^3*y(t)_3 + 2*y(t)_0^2*y(t)_1^2*y(t)_2^2 - y(t)_1^6
+
+
+julia> assess_identifiability(ode, known_ic = [x1,x2,x3])
+x1(0) => :globally
+  x2(0) => :globally
+  x3(0) => :globally
+  a     => :globally
+  p     => :globally
